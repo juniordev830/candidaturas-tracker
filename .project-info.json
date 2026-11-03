@@ -1,0 +1,20 @@
+{
+  "name": "candidaturas-tracker",
+  "title": "Candidaturas Tracker",
+  "description": "Acompanhamento de vagas, entrevistas e versões de currículo enviadas.",
+  "primary_language": "PHP",
+  "proposed_technologies": "PHP, Laravel, Livewire e MariaDB",
+  "status": "initial-core",
+  "github_created": true,
+  "application_implemented": true,
+  "planned_features": [
+    "Cadastrar candidaturas",
+    "Registrar etapas e retornos",
+    "Associar versão do currículo a cada envio"
+  ],
+  "implemented_technologies": [
+    "PHP",
+    "Biblioteca padrão"
+  ],
+  "validation": "Consulte GitHub Actions"
+}
