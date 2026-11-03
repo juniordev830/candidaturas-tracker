@@ -16,5 +16,6 @@
     "PHP",
     "Biblioteca padrão"
   ],
-  "validation": "Consulte GitHub Actions"
+  "validation": "Consulte GitHub Actions",
+  "github_url": "https://github.com/juniordev830/candidaturas-tracker"
 }
