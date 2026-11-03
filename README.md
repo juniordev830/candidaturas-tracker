@@ -4,7 +4,7 @@ Acompanhamento de vagas, entrevistas e versões de currículo enviadas.
 
 ## Implementado na primeira versão
 
-**PHP — núcleo executável de domínio.** Aplica transições válidas de candidatura, preserva a versão do currículo e registra um histórico cronológico. Grava em novo arquivo, sem sobrescrever a entrada.
+**PHP — núcleo executável de domínio.** Aplica transições válidas de candidatura, preserva a versão do currículo e registra um histórico cronológico. Grava em novo arquivo, sem sobrescrever a entrada. A opção `--resumo` calcula, sem modificar o arquivo, há quantos dias a candidatura está na etapa atual e sinaliza a necessidade de acompanhamento.
 
 ## Como executar
 
@@ -12,7 +12,12 @@ Instale PHP 8.3 CLI. Não há dependências Composer. Os comandos abaixo partem 
 
 ```sh
 php main.php examples/candidatura.json triagem 2026-11-03 candidatura-atualizada.json
+php main.php --resumo candidatura-atualizada.json 2026-11-20 14
 ```
+
+## Resumo de acompanhamento
+
+`--resumo ARQUIVO DATA [LIMITE_DIAS]` retorna JSON com a etapa, número de eventos, última movimentação, dias na etapa e `acompanhar` (booleano). O limite padrão é **14 dias** e aceita 1–3650. Datas devem ser `AAAA-MM-DD`. O histórico é validado quanto às transições e à ordem cronológica. Em candidaturas **sem histórico**, a data da entrada não é conhecida: `dias_na_etapa` é `null` e a candidatura não é marcada como atrasada. Etapas terminais (`contratada`, `rejeitada`, `retirada`) não são sinalizadas para acompanhamento. O relatório é apenas informativo; não envia mensagens a recrutadores ou e-mails.
 
 ## Testes
 
@@ -33,7 +38,8 @@ A proposta completa de evolução está em `ARQUITETURA.md`. As tecnologias prop
 ## Próximas entregas
 
 - [ ] Cadastrar candidaturas — ampliar o núcleo atual até o fluxo completo.
-- [ ] Registrar etapas e retornos — ampliar o núcleo atual até o fluxo completo.
+- [x] Registrar etapas no histórico e gerar resumo de acompanhamento no terminal.
+- [ ] Armazenar contatos e ações de retorno com dados autorizados.
 - [ ] Associar versão do currículo a cada envio — ampliar o núcleo atual até o fluxo completo.
 
 Licença: ainda não definida.
