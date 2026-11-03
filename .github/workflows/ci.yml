@@ -12,3 +12,6 @@ jobs:
           persist-credentials: false
       - name: Analisar sintaxe e testar
         run: docker run --rm -v "$PWD:/work" -w /work php:8.3-cli sh -c 'php -l main.php && php main.php --self-test'
+      - name: Validar CLI de acompanhamento
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work php:8.3-cli php main.php --resumo examples/candidatura.json 2026-11-03 | grep -F '"dias_na_etapa": null'
