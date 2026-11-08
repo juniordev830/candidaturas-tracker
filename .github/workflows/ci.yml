@@ -11,4 +11,4 @@ jobs:
         with:
           persist-credentials: false
       - name: Analisar sintaxe e testar
-        run: docker run --rm -v "$PWD:/work" -w /work php:8.3-cli sh -c 'php -l main.php && php main.php --self-test'
+        run: docker run --rm -v "$PWD:/work" -w /work php:8.3-cli sh -c 'php -l main.php && php -l src/Applications.php && php -l src/Storage.php && php -l src/CsvExporter.php && php -l cli/tracker.php && php -l tests/ApplicationsTest.php && php -l tests/CliTest.php && php main.php --self-test && php tests/ApplicationsTest.php && php tests/CliTest.php'
