@@ -1,39 +1,77 @@
 # Candidaturas Tracker
 
-Acompanhamento de vagas, entrevistas e versões de currículo enviadas.
+Ferramenta local em **PHP 8.3** para acompanhar candidaturas de emprego, controlar etapas de seleção e consultar registros que estão há muito tempo sem atualização.
 
-## Implementado na primeira versão
+A implementação original de transições em `main.php` foi mantida. A expansão adiciona biblioteca reutilizável, persistência local, CLI e testes independentes.
 
-**PHP — núcleo executável de domínio.** Aplica transições válidas de candidatura, preserva a versão do currículo e registra um histórico cronológico. Grava em novo arquivo, sem sobrescrever a entrada.
+## Funcionalidades
 
-## Como executar
+- Cadastro de candidaturas com identificador, empresa, cargo, origem, data de envio e pretensão opcional em centavos.
+- Transições validadas: `enviada → triagem → entrevista → proposta → contratada`, com rejeição ou retirada nas etapas permitidas.
+- Histórico cronológico das transições, sem permitir datas anteriores ao último evento.
+- Filtros por etapa e pesquisa por empresa, cargo ou ID.
+- Lista de candidaturas ativas há determinado número de dias sem atualização; não envia mensagens automaticamente.
+- Indicadores de candidaturas ativas, encerradas e distribuição por etapa.
+- Exportação CSV para planilhas com neutralização de campos que parecem fórmulas.
+- Arquivo JSON local versionado, com gravação usando arquivo temporário e substituição.
+- Testes de regras de negócio, importação, consultas, exportação e comandos de terminal.
 
-Instale PHP 8.3 CLI. Não há dependências Composer. Os comandos abaixo partem da raiz do repositório.
+## Requisitos
 
-```sh
-php main.php examples/candidatura.json triagem 2026-11-03 candidatura-atualizada.json
-```
+PHP **8.3 CLI**, sem Composer e sem banco de dados. Para verificar:
 
-## Testes
-
-```sh
+```bash
+php -l main.php
 php main.php --self-test
+php tests/ApplicationsTest.php
+php tests/CliTest.php
 ```
 
-Os testes cobrem invariantes e entradas inválidas. A preparação local não dispõe deste runtime; o workflow em `.github/workflows/ci.yml` executa a validação no GitHub Actions. O resultado de cada execução está na aba Actions, associado ao commit.
+## Exemplo no terminal
 
-## Organização e limites
+Use apenas dados fictícios ao experimentar:
 
-Código e exemplos: `main.php e examples/candidatura.json`. Os dados de exemplo são fictícios. As funções de domínio são separadas da leitura de argumentos no mesmo arquivo para manter a primeira versão pequena e revisável.
+```bash
+php cli/tracker.php add teste-001 "Empresa Exemplo" "Desenvolvedor PHP" 2026-11-08 portal 300000
+php cli/tracker.php add teste-002 "Loja Fictícia" "Suporte N1" 2026-11-08
+php cli/tracker.php advance teste-001 triagem 2026-11-09
+php cli/tracker.php list
+php cli/tracker.php list triagem
+php cli/tracker.php overdue 2026-11-30 14
+php cli/tracker.php summary
+php cli/tracker.php csv > candidaturas-privadas.csv
+php cli/tracker.php remove teste-002
+```
 
-Ainda não tem painel, login, envio de currículos ou banco. Laravel, Livewire e MariaDB estão planejados. Os dados de exemplo são fictícios.
+O valor `300000` significa **R$ 3.000,00** em centavos, e não uma garantia de salário. O arquivo CSV pode conter dados de vagas e empresas; mantenha-o privado.
 
-A proposta completa de evolução está em `ARQUITETURA.md`. As tecnologias propostas nessa arquitetura não devem ser interpretadas como dependências já implementadas.
+Para utilizar um arquivo diferente, use `--file caminho.json` antes do comando:
 
-## Próximas entregas
+```bash
+php cli/tracker.php --file /tmp/candidaturas-teste.json summary
+```
 
-- [ ] Cadastrar candidaturas — ampliar o núcleo atual até o fluxo completo.
-- [ ] Registrar etapas e retornos — ampliar o núcleo atual até o fluxo completo.
-- [ ] Associar versão do currículo a cada envio — ampliar o núcleo atual até o fluxo completo.
+## Privacidade e limites
 
-Licença: ainda não definida.
+Por padrão, o catálogo reside em `~/.gx-candidaturas/candidaturas.json` (ou no caminho definido por `GX_APPLICATIONS_FILE`). É um protótipo local sem criptografia, autenticação ou acesso multiusuário; não armazene senhas nem dados reais de recrutadores no GitHub.
+
+O sistema valida até **5.000 candidaturas**, **100 eventos por candidatura** e um arquivo de até **1 MB**. A busca textual é simples; não implementa sincronização com plataformas de vagas nem notificação de empregadores.
+
+## API reutilizável
+
+```php
+<?php
+require 'src/Applications.php';
+
+use GX\Applications\Applications;
+
+$registro = Applications::create(
+    'teste-001', 'Empresa Fictícia', 'Desenvolvedor PHP', '2026-11-08'
+);
+$registro = Applications::advance($registro, 'triagem', '2026-11-09');
+print_r(Applications::summary([$registro]));
+```
+
+## Licença
+
+Ainda não definida.
