@@ -36,7 +36,8 @@ final class Applications
             throw new InvalidArgumentException("Campo $field inválido.");
         }
         $clean = trim($value);
-        if ($clean === '' || mbLength($clean) > $limit ||
+        if ($clean === '' || preg_match('//u', $clean) !== 1 ||
+            mbLength($clean) > $limit ||
             preg_match('/[\x00-\x1F\x7F]/', $clean)) {
             throw new InvalidArgumentException("Campo $field vazio, grande demais ou com controle.");
         }
@@ -60,7 +61,8 @@ final class Applications
             ($salaryCents < 0 || $salaryCents > self::MAX_AMOUNT_CENTS)) {
             throw new InvalidArgumentException('Salário esperado em centavos inválido.');
         }
-        if (strlen($notes) > 1000 || preg_match('/[\x00-\x08\x0B-\x1F]/', $notes)) {
+        if (strlen($notes) > 1000 || preg_match('//u', $notes) !== 1 ||
+            preg_match('/[\x00-\x08\x0B-\x1F]/', $notes)) {
             throw new InvalidArgumentException('Observações inválidas.');
         }
         return [
