@@ -37,7 +37,7 @@ function expectCli(bool $value, string $message): void
 
 try {
     [$exit, $text] = cli(['help']);
-    expectCli($exit === 0 && str_contains($text, 'Candidaturas'), 'help');
+    expectCli($exit === 0 && str_contains($text, 'candidaturas'), 'help');
 
     [$exit, $text] = cli([
         'add', 'job-01', 'Empresa Fictícia', 'Backend Júnior',
