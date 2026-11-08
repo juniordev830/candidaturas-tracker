@@ -53,6 +53,16 @@ fails(static fn() => Applications::create('x', ' ', 'Dev', '2026-10-01'), 'empty
 fails(static fn() => Applications::create('x', 'X', 'Dev', '2026-10-01', 'portal', -1), 'negative salary');
 fails(static fn() => Applications::create('x', "Bad\nCompany", 'Dev', '2026-10-01'), 'controls');
 
+// Invalid UTF-8 must be rejected before JSON serialization.
+fails(static fn() => Applications::create('utf8-a', chr(0xFF), 'Dev', '2026-10-01'),
+    'malformed UTF-8 in company');
+fails(static fn() => Applications::create('utf8-b', 'Empresa', 'Dev', '2026-10-01',
+    'portal', null, chr(0xC3) . chr(0x28)),
+    'malformed UTF-8 in notes');
+$unicode = Applications::create('unicode-ok', 'São José', 'Engenheira', '2026-10-01',
+    'portal', null, 'Observação válida');
+ok(Applications::validate($unicode) === $unicode, 'valid accented UTF-8 survives validation');
+
 // Validate strict state-machine transitions without changing originals.
 $screening = Applications::advance($initial, 'triagem', '2026-10-02');
 ok($screening['etapa'] === 'triagem', 'first step');
