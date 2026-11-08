@@ -101,12 +101,14 @@ ok(count($removed) === 1, 'remove selected application');
 ok(count($updated) === 2, 'do not mutate list');
 fails(static fn() => Applications::remove($updated, 'missing'), 'remove unknown');
 
-$report = Applications::summary([$hired, $screening]);
+$secondScreening = Applications::advance(example('vaga-2'), 'triagem', '2026-10-02');
+$report = Applications::summary([$hired, $secondScreening]);
 ok($report['total'] === 2, 'total summary');
 ok($report['ativas'] === 1 && $report['encerradas'] === 1, 'status partition');
 ok($report['por_etapa']['contratada'] === 1, 'hired count');
 
-$due = Applications::overdue([$initial, $hired, $screening], '2026-11-01', 14);
+$thirdInitial = example('vaga-3');
+$due = Applications::overdue([$thirdInitial, $hired, $secondScreening], '2026-11-01', 14);
 ok(count($due) === 2, 'only active, stale applications');
 ok(count(Applications::overdue([$initial], '2026-10-05', 14)) === 0, 'not due before interval');
 fails(static fn() => Applications::overdue([$initial], '2026-11-01', 0), 'bad due interval');
