@@ -21,6 +21,7 @@ function usage(): string
         '  remove ID',
         '  list [ETAPA|all] [BUSCA]',
         '  overdue AAAA-MM-DD [DIAS]',
+        '  followup AAAA-MM-DD [DIAS] [LIMITE]',
         '  summary',
         '  csv',
         '  help',
@@ -124,6 +125,22 @@ function run(array $args): int
             }
             return 0;
 
+        case 'followup':
+            if (count($values) < 1 || count($values) > 3) {
+                throw new InvalidArgumentException('Uso: followup DATA [DIAS] [LIMITE]');
+            }
+            $days = isset($values[1]) ? number($values[1], 'dias') : 14;
+            $limit = isset($values[2]) ? number($values[2], 'limite') : 20;
+            $followUps = Applications::followUps($registry, $values[0], $days, $limit);
+            echo 'Prioridades de retorno: ' . count($followUps) . "\n";
+            foreach ($followUps as $item) {
+                echo implode(' | ', [
+                    $item['id'], $item['empresa'], $item['cargo'], $item['etapa'],
+                    $item['ultima_atualizacao'], $item['dias_sem_atualizacao'] . ' dias',
+                ]) . "\n";
+            }
+            return 0;
+
         case 'summary':
             if ($values !== []) {
                 throw new InvalidArgumentException('summary não recebe argumentos.');
@@ -151,3 +168,4 @@ try {
     fwrite(STDERR, 'Erro: ' . $error->getMessage() . "\n");
     exit(2);
 }
+
