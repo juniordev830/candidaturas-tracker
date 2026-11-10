@@ -123,6 +123,19 @@ ok(count($due) === 2, 'only active, stale applications');
 ok(count(Applications::overdue([$initial], '2026-10-05', 14)) === 0, 'not due before interval');
 fails(static fn() => Applications::overdue([$initial], '2026-11-01', 0), 'bad due interval');
 
+// Follow-ups rank only active applications without modifying the registry.
+$followUps = Applications::followUps(
+    [$thirdInitial, $hired, $secondScreening], '2026-11-01', 14
+);
+ok(array_column($followUps, 'id') === ['vaga-3', 'vaga-2'], 'follow-ups rank oldest first');
+ok($followUps[0]['ultima_atualizacao'] === '2026-10-01', 'follow-up last date');
+ok($followUps[0]['dias_sem_atualizacao'] === 31, 'follow-up days inactive');
+ok(count(Applications::followUps([$initial], '2026-10-05', 14)) === 0, 'recent application hidden');
+ok(count(Applications::followUps([$thirdInitial, $secondScreening], '2026-11-01', 14, 1)) === 1,
+    'follow-up limit');
+fails(static fn() => Applications::followUps([$initial], '2026-11-01', 0), 'bad follow-up days');
+fails(static fn() => Applications::followUps([$initial], '2026-11-01', 14, 0), 'bad follow-up limit');
+
 // Spreadsheet export: all rows are quoted/escaped safely by fputcsv.
 $malicious = Applications::create(
     'candidate-9', '=SUM(A1:A2)', 'QA, backend', '2026-10-01'
@@ -160,3 +173,4 @@ try {
 }
 
 echo "Application tracker: {$count} checks passed.\n";
+

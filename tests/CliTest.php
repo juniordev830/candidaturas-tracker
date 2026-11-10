@@ -66,6 +66,12 @@ try {
     [$exit, $text] = cli(['overdue', '2026-11-01', '14']);
     expectCli($exit === 0 && str_contains($text, '2'), 'stale active applications');
 
+    [$exit, $text] = cli(['followup', '2026-11-01', '14', '1']);
+    expectCli($exit === 0 && str_contains($text, 'Prioridades de retorno: 1'),
+        'follow-up summary');
+    expectCli(str_contains($text, 'job-02') && !str_contains($text, 'job-01'),
+        'follow-up ranks oldest active record');
+
     [$exit, $text] = cli(['summary']);
     $summary = json_decode($text, true, 32, JSON_THROW_ON_ERROR);
     expectCli($exit === 0 && $summary['total'] === 2, 'summary count');
@@ -83,6 +89,9 @@ try {
     [$exit] = cli(['advance', 'job-02', 'contratada', '2026-10-06']);
     expectCli($exit !== 0, 'invalid status jump');
 
+    [$exit] = cli(['followup', '2026-11-01', '0']);
+    expectCli($exit !== 0, 'invalid follow-up window');
+
     [$exit, $text] = cli(['remove', 'job-01']);
     expectCli($exit === 0, 'remove record');
     [$exit, $text] = cli(['summary']);
@@ -98,3 +107,4 @@ try {
     @unlink($database);
     @rmdir($folder);
 }
+

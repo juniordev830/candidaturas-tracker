@@ -266,6 +266,57 @@ final class Applications
         return $result;
     }
 
+    /**
+     * Rank active applications that need a manual follow-up.
+     *
+     * Each result deliberately exposes only the details needed for a local
+     * reminder list. It does not contact companies or change application data.
+     *
+     * @return list<array{id:string,empresa:string,cargo:string,etapa:string,ultima_atualizacao:string,dias_sem_atualizacao:int}>
+     */
+    public static function followUps(
+        array $items, string $today, int $afterDays = 14, int $limit = 20
+    ): array {
+        self::day($today);
+        if ($afterDays < 1 || $afterDays > 365) {
+            throw new InvalidArgumentException('Janela precisa estar entre 1 e 365 dias.');
+        }
+        if ($limit < 1 || $limit > 100) {
+            throw new InvalidArgumentException('Limite precisa estar entre 1 e 100.');
+        }
+
+        $closed = ['contratada', 'rejeitada', 'retirada'];
+        $todayDate = new DateTimeImmutable($today);
+        $result = [];
+        foreach (self::validateRegistry($items) as $record) {
+            if (in_array($record['etapa'], $closed, true)) {
+                continue;
+            }
+            $history = $record['historico'];
+            $lastDay = $history === [] ? $record['data_envio']
+                : $history[count($history) - 1]['data'];
+            if ($today < $lastDay) {
+                continue;
+            }
+            $days = (new DateTimeImmutable($lastDay))->diff($todayDate)->days;
+            if ($days < $afterDays) {
+                continue;
+            }
+            $result[] = [
+                'id' => $record['id'],
+                'empresa' => $record['empresa'],
+                'cargo' => $record['cargo'],
+                'etapa' => $record['etapa'],
+                'ultima_atualizacao' => $lastDay,
+                'dias_sem_atualizacao' => $days,
+            ];
+        }
+        usort($result, static fn (array $a, array $b): int =>
+            [$b['dias_sem_atualizacao'], $a['ultima_atualizacao'], $a['id']] <=>
+            [$a['dias_sem_atualizacao'], $b['ultima_atualizacao'], $b['id']]);
+        return array_slice($result, 0, $limit);
+    }
+
     public static function summary(array $items): array
     {
         $registry = self::validateRegistry($items);
@@ -289,3 +340,4 @@ function mbLength(string $value): int
 {
     return preg_match_all('/./us', $value) ?: 0;
 }
+

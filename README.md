@@ -11,6 +11,7 @@ A implementação original de transições em `main.php` foi mantida. A expansã
 - Histórico cronológico das transições, sem permitir datas anteriores ao último evento.
 - Filtros por etapa e pesquisa por empresa, cargo ou ID.
 - Lista de candidaturas ativas há determinado número de dias sem atualização; não envia mensagens automaticamente.
+- Priorização de retornos pendentes por dias sem atualização, sem enviar contatos ou alterar registros.
 - Indicadores de candidaturas ativas, encerradas e distribuição por etapa.
 - Exportação CSV para planilhas com neutralização de campos que parecem fórmulas.
 - Arquivo JSON local versionado, com gravação usando arquivo temporário e substituição.
@@ -38,12 +39,17 @@ php cli/tracker.php advance teste-001 triagem 2026-11-09
 php cli/tracker.php list
 php cli/tracker.php list triagem
 php cli/tracker.php overdue 2026-11-30 14
+php cli/tracker.php followup 2026-11-30 14 10
 php cli/tracker.php summary
 php cli/tracker.php csv > candidaturas-privadas.csv
 php cli/tracker.php remove teste-002
 ```
 
 O valor `300000` significa **R$ 3.000,00** em centavos, e não uma garantia de salário. O arquivo CSV pode conter dados de vagas e empresas; mantenha-o privado.
+
+`followup` retorna as candidaturas ativas que ultrapassaram a janela informada,
+da mais antiga para a mais recente. A data é sempre explícita no comando para
+que a lista seja reproduzível; nenhum contato é enviado automaticamente.
 
 Para utilizar um arquivo diferente, use `--file caminho.json` antes do comando:
 
@@ -75,3 +81,4 @@ print_r(Applications::summary([$registro]));
 ## Licença
 
 Ainda não definida.
+
