@@ -103,6 +103,20 @@ fails(static fn() => Applications::advanceById($records, 'missing', 'triagem', '
 ok(count(Applications::filter($updated, 'triagem')) === 1, 'filter stage');
 ok(count(Applications::filter($updated, 'all', 'desenvolvedor')) === 2, 'filter job');
 ok(count(Applications::filter($updated, 'all', 'vaga-2')) === 1, 'filter ID');
+
+// Regression: accented uppercase letters must match lowercase search terms.
+$accented = Applications::create(
+    'vaga-acentos', 'ÁGUA E AÇÃO', 'TÉCNICO DE MANUTENÇÃO', '2026-10-10'
+);
+ok(count(Applications::filter([$accented], 'all', 'água')) === 1,
+    'uppercase accented company matches lowercase search');
+ok(count(Applications::filter([$accented], 'all', 'ação')) === 1,
+    'uppercase accented company with tilde matches lowercase search');
+ok(count(Applications::filter([$accented], 'all', 'técnico')) === 1,
+    'uppercase accented role matches lowercase search');
+ok(Applications::filter([$accented], 'all', 'AGUA') === [],
+    'search still distinguishes accented and unaccented terms');
+
 ok(Applications::filter($updated)[0]['id'] === 'vaga-2', 'newest first');
 fails(static fn() => Applications::filter($updated, 'unknown'), 'unknown stage');
 

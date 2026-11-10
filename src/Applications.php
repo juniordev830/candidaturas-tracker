@@ -216,6 +216,21 @@ final class Applications
         return $filtered;
     }
 
+    /**
+     * Make Portuguese searches case-insensitive without extra PHP extensions.
+     * Accent marks are preserved: "ação" and "acao" remain different terms.
+     */
+    private static function lowerForSearch(string $value): string
+    {
+        return strtolower(strtr($value, [
+            'À' => 'à', 'Á' => 'á', 'Â' => 'â', 'Ã' => 'ã', 'Ä' => 'ä',
+            'Ç' => 'ç', 'È' => 'è', 'É' => 'é', 'Ê' => 'ê', 'Ë' => 'ë',
+            'Ì' => 'ì', 'Í' => 'í', 'Î' => 'î', 'Ï' => 'ï',
+            'Ò' => 'ò', 'Ó' => 'ó', 'Ô' => 'ô', 'Õ' => 'õ', 'Ö' => 'ö',
+            'Ù' => 'ù', 'Ú' => 'ú', 'Û' => 'û', 'Ü' => 'ü',
+        ]));
+    }
+
     public static function filter(
         array $items, string $status = 'all', string $query = ''
     ): array {
@@ -225,12 +240,12 @@ final class Applications
         if (strlen($query) > 120) {
             throw new InvalidArgumentException('Consulta muito extensa.');
         }
-        $search = strtolower(trim($query));
+        $search = self::lowerForSearch(trim($query));
         $filtered = array_filter(
             self::validateRegistry($items),
             static function (array $item) use ($status, $search): bool {
                 $match = $status === 'all' || $item['etapa'] === $status;
-                $needle = strtolower(
+                $needle = self::lowerForSearch(
                     $item['empresa'] . ' ' . $item['cargo'] . ' ' . $item['id']
                 );
                 return $match && ($search === '' || str_contains($needle, $search));
