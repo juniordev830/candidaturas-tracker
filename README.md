@@ -9,7 +9,7 @@ A implementação original de transições em `main.php` foi mantida. A expansã
 - Cadastro de candidaturas com identificador, empresa, cargo, origem, data de envio e pretensão opcional em centavos.
 - Transições validadas: `enviada → triagem → entrevista → proposta → contratada`, com rejeição ou retirada nas etapas permitidas.
 - Histórico cronológico das transições, sem permitir datas anteriores ao último evento.
-- Filtros por etapa e pesquisa por empresa, cargo ou ID.
+- Filtros por etapa e pesquisa por empresa, cargo ou ID, sem diferenciar letras maiúsculas de minúsculas, inclusive acentos em português (por exemplo, `ÁGUA` é encontrada por `água`). A busca mantém a diferença entre termos com e sem acento (`ação` e `acao`).
 - Lista de candidaturas ativas há determinado número de dias sem atualização; não envia mensagens automaticamente.
 - Priorização de retornos pendentes por dias sem atualização, sem enviar contatos ou alterar registros.
 - Indicadores de candidaturas ativas, encerradas e distribuição por etapa.
