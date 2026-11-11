@@ -42,10 +42,12 @@ php cli/tracker.php overdue 2026-11-30 14
 php cli/tracker.php followup 2026-11-30 14 10
 php cli/tracker.php summary
 php cli/tracker.php csv > candidaturas-privadas.csv
+php cli/tracker.php csv entrevista > entrevistas-privadas.csv
+php cli/tracker.php csv all "Empresa Fictícia" > empresa-privada.csv
 php cli/tracker.php remove teste-002
 ```
 
-O valor `300000` significa **R$ 3.000,00** em centavos, e não uma garantia de salário. O arquivo CSV pode conter dados de vagas e empresas; mantenha-o privado.
+O valor `300000` significa **R$ 3.000,00** em centavos, e não uma garantia de salário. O comando `csv [ETAPA|all] [BUSCA]` exporta apenas as candidaturas que combinam com o filtro, com cabeçalho mesmo quando não há resultados. A exportação reutiliza a busca de `list` e protege células que poderiam ser interpretadas como fórmulas por planilhas. O arquivo CSV pode conter dados de vagas e empresas; mantenha-o privado.
 
 `followup` retorna as candidaturas ativas que ultrapassaram a janela informada,
 da mais antiga para a mais recente. A data é sempre explícita no comando para
