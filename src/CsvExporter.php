@@ -60,4 +60,40 @@ final class CsvExporter
             fclose($stream);
         }
     }
+    /**
+     * Exporta as prioridades de acompanhamento em ordem de urgência.
+     * Reutiliza a validação do domínio; não envia mensagens nem grava arquivos.
+     */
+    public static function exportFollowUps(
+        array $records, string $today, int $afterDays = 14, int $limit = 20
+    ): string {
+        $rows = Applications::followUps($records, $today, $afterDays, $limit);
+        $headers = [
+            'id', 'empresa', 'cargo', 'etapa',
+            'ultima_atualizacao', 'dias_sem_atualizacao',
+        ];
+        $stream = fopen('php://temp', 'w+');
+        if ($stream === false) {
+            throw new RuntimeException('Não foi possível abrir buffer CSV.');
+        }
+        try {
+            fputcsv($stream, $headers, ',', '"', '');
+            foreach ($rows as $item) {
+                $cells = [];
+                foreach ($headers as $field) {
+                    $cells[] = self::safeCell((string) $item[$field]);
+                }
+                fputcsv($stream, $cells, ',', '"', '');
+            }
+            rewind($stream);
+            $csv = stream_get_contents($stream);
+            if ($csv === false) {
+                throw new RuntimeException('Erro ao ler buffer CSV.');
+            }
+            return $csv;
+        } finally {
+            fclose($stream);
+        }
+    }
+
 }
