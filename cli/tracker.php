@@ -23,7 +23,7 @@ function usage(): string
         '  overdue AAAA-MM-DD [DIAS]',
         '  followup AAAA-MM-DD [DIAS] [LIMITE]',
         '  summary',
-        '  csv',
+        '  csv [ETAPA|all] [BUSCA]',
         '  help',
         '',
         'Etapas válidas: enviada, triagem, entrevista, proposta, contratada, rejeitada, retirada.',
@@ -151,10 +151,14 @@ function run(array $args): int
             return 0;
 
         case 'csv':
-            if ($values !== []) {
-                throw new InvalidArgumentException('csv não recebe argumentos.');
+            if (count($values) > 2) {
+                throw new InvalidArgumentException('Uso: csv [ETAPA] [BUSCA]');
             }
-            echo CsvExporter::export($registry);
+            // Reutiliza a mesma validação da lista; o CSV nunca altera registros.
+            $selected = Applications::filter(
+                $registry, $values[0] ?? 'all', $values[1] ?? ''
+            );
+            echo CsvExporter::export($selected);
             return 0;
 
         default:
