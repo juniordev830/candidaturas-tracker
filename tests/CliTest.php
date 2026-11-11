@@ -81,6 +81,63 @@ try {
     expectCli($exit === 0 && str_contains($text, 'empresa,cargo'), 'CSV header');
     expectCli(substr_count($text, "\n") === 3, 'CSV rows');
 
+    [$exit, $filteredCsv] = cli(['csv', 'entrevista']);
+    expectCli($exit === 0 && str_contains($filteredCsv, 'job-01'), 'filtered CSV has match');
+    expectCli(!str_contains($filteredCsv, 'job-02'), 'filtered CSV excludes other stages');
+    expectCli(substr_count($filteredCsv, "\n") === 2, 'filtered CSV includes one row');
+
+    [$exit, $searchCsv] = cli(['csv', 'all', 'Loja']);
+    expectCli($exit === 0 && str_contains($searchCsv, 'job-02'), 'CSV supports search');
+    expectCli(!str_contains($searchCsv, 'job-01'), 'CSV search excludes unmatched records');
+
+    [$exit, $emptyCsv] = cli(['csv', 'contratada']);
+    expectCli($exit === 0 && substr_count($emptyCsv, "\n") === 1,
+        'empty filtered CSV still has a header');
+
+    [$exit] = cli(['csv', 'etapa-invalida']);
+    expectCli($exit !== 0, 'invalid CSV stage rejected');
+    [$exit] = cli(['csv', 'all', 'Loja', 'extra']);
+    expectCli($exit !== 0, 'unexpected CSV args rejected');
+
+    $beforeFollowupCsv = file_get_contents($database);
+    [$exit, $priorityCsv] = cli(['followup-csv', '2026-11-01', '14', '1']);
+    expectCli($exit === 0, 'follow-up CSV exported');
+    expectCli(str_contains($priorityCsv, 'ultima_atualizacao,dias_sem_atualizacao'),
+        'follow-up CSV includes age columns');
+    expectCli(str_contains($priorityCsv, 'job-02') && !str_contains($priorityCsv, 'job-01'),
+        'follow-up CSV respects priority limit');
+    expectCli(substr_count($priorityCsv, "\n") === 2, 'one row plus header');
+    expectCli(file_get_contents($database) === $beforeFollowupCsv,
+        'export must never change JSON data');
+
+    [$exit, $noneCsv] = cli(['followup-csv', '2026-10-06', '14']);
+    expectCli($exit === 0 && substr_count($noneCsv, "\n") === 1,
+        'empty follow-up CSV still includes header');
+    foreach ([
+        ['followup-csv'],
+        ['followup-csv', '2026-02-30'],
+        ['followup-csv', '2026-11-01', '0'],
+        ['followup-csv', '2026-11-01', '14', '101'],
+        ['followup-csv', '2026-11-01', '14', '1', 'extra'],
+    ] as $badArgs) {
+        [$exit] = cli($badArgs);
+        expectCli($exit !== 0, 'invalid follow-up CSV arguments rejected');
+        expectCli(file_get_contents($database) === $beforeFollowupCsv,
+            'invalid export must preserve JSON data');
+    }
+
+    [$exit] = cli([
+        'add', 'job-formula', '=2+3', '@role',
+        '2026-09-01',
+    ]);
+    expectCli($exit === 0, 'created test input for CSV formula safety');
+    [$exit, $safeCsv] = cli(['followup-csv', '2026-11-01', '14', '1']);
+    expectCli($exit === 0 && str_contains($safeCsv, "'=2+3")
+        && str_contains($safeCsv, "'@role"),
+        'formula-like company and role are neutralized in follow-up CSV');
+    expectCli(cli(['remove', 'job-formula'])[0] === 0,
+        'removed formula safety test record');
+
     [$exit] = cli([
         'add', 'job-01', 'Duplicada', 'Dev', '2026-10-01',
     ]);

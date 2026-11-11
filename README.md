@@ -13,7 +13,7 @@ A implementação original de transições em `main.php` foi mantida. A expansã
 - Lista de candidaturas ativas há determinado número de dias sem atualização; não envia mensagens automaticamente.
 - Priorização de retornos pendentes por dias sem atualização, sem enviar contatos ou alterar registros.
 - Indicadores de candidaturas ativas, encerradas e distribuição por etapa.
-- Exportação CSV para planilhas com neutralização de campos que parecem fórmulas.
+- Exportação CSV para planilhas com neutralização de campos que parecem fórmulas, incluindo a lista de retornos prioritários sem gravar os dados.
 - Arquivo JSON local versionado, com gravação usando arquivo temporário e substituição.
 - Testes de regras de negócio, importação, consultas, exportação e comandos de terminal.
 
@@ -40,16 +40,21 @@ php cli/tracker.php list
 php cli/tracker.php list triagem
 php cli/tracker.php overdue 2026-11-30 14
 php cli/tracker.php followup 2026-11-30 14 10
+php cli/tracker.php followup-csv 2026-11-30 14 10 > retornos-privados.csv
 php cli/tracker.php summary
 php cli/tracker.php csv > candidaturas-privadas.csv
+php cli/tracker.php csv entrevista > entrevistas-privadas.csv
+php cli/tracker.php csv all "Empresa Fictícia" > empresa-privada.csv
 php cli/tracker.php remove teste-002
 ```
 
-O valor `300000` significa **R$ 3.000,00** em centavos, e não uma garantia de salário. O arquivo CSV pode conter dados de vagas e empresas; mantenha-o privado.
+O valor `300000` significa **R$ 3.000,00** em centavos, e não uma garantia de salário. O comando `csv [ETAPA|all] [BUSCA]` exporta apenas as candidaturas que combinam com o filtro, com cabeçalho mesmo quando não há resultados. A exportação reutiliza a busca de `list` e protege células que poderiam ser interpretadas como fórmulas por planilhas. O arquivo CSV pode conter dados de vagas e empresas; mantenha-o privado.
 
 `followup` retorna as candidaturas ativas que ultrapassaram a janela informada,
 da mais antiga para a mais recente. A data é sempre explícita no comando para
 que a lista seja reproduzível; nenhum contato é enviado automaticamente.
+
+`followup-csv DATA [DIAS] [LIMITE]` exporta essas mesmas prioridades de retorno, com ID, empresa, cargo, etapa, data da última atualização e dias sem atualização. O arquivo usa somente a saída padrão, preserva a ordem de urgência e contém apenas o cabeçalho quando não há pendências. Campos que se parecem com fórmulas são neutralizados. **O exportador não edita candidaturas nem entra em contato com empresas.** Guarde o CSV fora do repositório.
 
 Para utilizar um arquivo diferente, use `--file caminho.json` antes do comando:
 
