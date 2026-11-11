@@ -16,9 +16,10 @@ final class CsvExporter
 
     private static function safeCell(string $value): string
     {
-        // Spreadsheet importers can execute formulas beginning with =,+,-,@.
-        // Prefix those values with an apostrophe, including after leading spaces.
-        return preg_match('/^\s*[=+\-@]/', $value) === 1
+        // Some spreadsheet importers ignore Unicode spaces and format controls
+        // (e.g. NBSP, zero-width space and BOM) before evaluating formulas.
+        // Keep the original value visible but neutralize every risky prefix.
+        return preg_match('/^[\s\p{Z}\p{Cf}]*[=+\-@]/u', $value) === 1
             ? "'" . $value : $value;
     }
 
