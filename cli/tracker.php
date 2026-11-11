@@ -22,6 +22,7 @@ function usage(): string
         '  list [ETAPA|all] [BUSCA]',
         '  overdue AAAA-MM-DD [DIAS]',
         '  followup AAAA-MM-DD [DIAS] [LIMITE]',
+        '  followup-csv AAAA-MM-DD [DIAS] [LIMITE]',
         '  summary',
         '  csv [ETAPA|all] [BUSCA]',
         '  help',
@@ -139,6 +140,15 @@ function run(array $args): int
                     $item['ultima_atualizacao'], $item['dias_sem_atualizacao'] . ' dias',
                 ]) . "\n";
             }
+            return 0;
+
+        case 'followup-csv':
+            if (count($values) < 1 || count($values) > 3) {
+                throw new InvalidArgumentException('Uso: followup-csv DATA [DIAS] [LIMITE]');
+            }
+            $days = isset($values[1]) ? number($values[1], 'dias') : 14;
+            $limit = isset($values[2]) ? number($values[2], 'limite') : 20;
+            echo CsvExporter::exportFollowUps($registry, $values[0], $days, $limit);
             return 0;
 
         case 'summary':
