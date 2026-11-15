@@ -159,6 +159,23 @@ ok(str_contains($csv, 'empresa,cargo'), 'CSV heading');
 ok(str_contains($csv, "'=SUM(A1:A2)"), 'CSV formula prefix');
 ok(str_contains($csv, '"QA, backend"'), 'CSV embedded comma');
 ok(substr_count($csv, "\n") === 3, 'CSV row count');
+
+// Unicode whitespace/format characters must not bypass CSV formula protection.
+foreach (["\u{00A0}", "\u{2003}", "\u{200B}", "\u{FEFF}"] as $prefix) {
+    $unicodeFormula = Applications::create(
+        'candidate-unicode', $prefix . '=SUM(1,1)', 'QA', '2026-10-01'
+    );
+    $unicodeCsv = CsvExporter::export([$unicodeFormula]);
+    ok(str_contains($unicodeCsv, "'" . $prefix . '=SUM(1,1)'),
+        'CSV neutralizes formula after Unicode whitespace or format character');
+}
+$ordinaryCsv = CsvExporter::export([
+    Applications::create('candidate-safe', 'Empresa Segura', 'QA', '2026-10-01')
+]);
+ok(str_contains($ordinaryCsv, 'Empresa Segura') &&
+   !str_contains($ordinaryCsv, "'Empresa Segura"),
+   'ordinary CSV cells remain unchanged');
+
 ok(substr_count(CsvExporter::export([]), "\n") === 1, 'empty CSV has header');
 
 // Private, atomic JSON snapshots.

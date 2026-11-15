@@ -22,8 +22,9 @@ function usage(): string
         '  list [ETAPA|all] [BUSCA]',
         '  overdue AAAA-MM-DD [DIAS]',
         '  followup AAAA-MM-DD [DIAS] [LIMITE]',
+        '  followup-csv AAAA-MM-DD [DIAS] [LIMITE]',
         '  summary',
-        '  csv',
+        '  csv [ETAPA|all] [BUSCA]',
         '  help',
         '',
         'Etapas válidas: enviada, triagem, entrevista, proposta, contratada, rejeitada, retirada.',
@@ -141,6 +142,15 @@ function run(array $args): int
             }
             return 0;
 
+        case 'followup-csv':
+            if (count($values) < 1 || count($values) > 3) {
+                throw new InvalidArgumentException('Uso: followup-csv DATA [DIAS] [LIMITE]');
+            }
+            $days = isset($values[1]) ? number($values[1], 'dias') : 14;
+            $limit = isset($values[2]) ? number($values[2], 'limite') : 20;
+            echo CsvExporter::exportFollowUps($registry, $values[0], $days, $limit);
+            return 0;
+
         case 'summary':
             if ($values !== []) {
                 throw new InvalidArgumentException('summary não recebe argumentos.');
@@ -151,10 +161,14 @@ function run(array $args): int
             return 0;
 
         case 'csv':
-            if ($values !== []) {
-                throw new InvalidArgumentException('csv não recebe argumentos.');
+            if (count($values) > 2) {
+                throw new InvalidArgumentException('Uso: csv [ETAPA] [BUSCA]');
             }
-            echo CsvExporter::export($registry);
+            // Reutiliza a mesma validação da lista; o CSV nunca altera registros.
+            $selected = Applications::filter(
+                $registry, $values[0] ?? 'all', $values[1] ?? ''
+            );
+            echo CsvExporter::export($selected);
             return 0;
 
         default:

@@ -16,9 +16,10 @@ final class CsvExporter
 
     private static function safeCell(string $value): string
     {
-        // Spreadsheet importers can execute formulas beginning with =,+,-,@.
-        // Prefix those values with an apostrophe, including after leading spaces.
-        return preg_match('/^\s*[=+\-@]/', $value) === 1
+        // Some spreadsheet importers ignore Unicode spaces and format controls
+        // (e.g. NBSP, zero-width space and BOM) before evaluating formulas.
+        // Keep the original value visible but neutralize every risky prefix.
+        return preg_match('/^[\s\p{Z}\p{Cf}]*[=+\-@]/u', $value) === 1
             ? "'" . $value : $value;
     }
 
@@ -59,4 +60,40 @@ final class CsvExporter
             fclose($stream);
         }
     }
+    /**
+     * Exporta as prioridades de acompanhamento em ordem de urgência.
+     * Reutiliza a validação do domínio; não envia mensagens nem grava arquivos.
+     */
+    public static function exportFollowUps(
+        array $records, string $today, int $afterDays = 14, int $limit = 20
+    ): string {
+        $rows = Applications::followUps($records, $today, $afterDays, $limit);
+        $headers = [
+            'id', 'empresa', 'cargo', 'etapa',
+            'ultima_atualizacao', 'dias_sem_atualizacao',
+        ];
+        $stream = fopen('php://temp', 'w+');
+        if ($stream === false) {
+            throw new RuntimeException('Não foi possível abrir buffer CSV.');
+        }
+        try {
+            fputcsv($stream, $headers, ',', '"', '');
+            foreach ($rows as $item) {
+                $cells = [];
+                foreach ($headers as $field) {
+                    $cells[] = self::safeCell((string) $item[$field]);
+                }
+                fputcsv($stream, $cells, ',', '"', '');
+            }
+            rewind($stream);
+            $csv = stream_get_contents($stream);
+            if ($csv === false) {
+                throw new RuntimeException('Erro ao ler buffer CSV.');
+            }
+            return $csv;
+        } finally {
+            fclose($stream);
+        }
+    }
+
 }
