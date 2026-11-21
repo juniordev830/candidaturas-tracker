@@ -90,3 +90,5 @@ Ainda não definida.
 ## Roteiro de qualidade
 
 Consulte o [guia de validação e manutenção](docs/GUIA_DE_VALIDACAO.md) para reproduzir testes, entender as limitações e revisar mudanças com segurança.
+
+A API `validateRegistry` exige uma lista indexada de candidaturas (não um mapa associativo), evitando aceitar JSON com formato incorreto. `overdue` apresenta resultados da última atualização mais antiga para a mais recente, com desempate por ID; nenhuma ordem prévia do arquivo afeta a prioridade.

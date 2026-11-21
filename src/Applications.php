@@ -133,6 +133,9 @@ final class Applications
     /** @param list<array<string,mixed>> $items */
     public static function validateRegistry(array $items): array
     {
+        if (!array_is_list($items)) {
+            throw new InvalidArgumentException('Registro deve ser uma lista de candidaturas.');
+        }
         if (count($items) > self::MAX_RECORDS) {
             throw new InvalidArgumentException('Limite de 5000 candidaturas excedido.');
         }
@@ -278,6 +281,13 @@ final class Applications
                 $result[] = $record;
             }
         }
+        usort($result, static function (array $a, array $b): int {
+            $aHistory = $a['historico'];
+            $bHistory = $b['historico'];
+            $aLast = $aHistory === [] ? $a['data_envio'] : $aHistory[count($aHistory) - 1]['data'];
+            $bLast = $bHistory === [] ? $b['data_envio'] : $bHistory[count($bHistory) - 1]['data'];
+            return [$aLast, $a['id']] <=> [$bLast, $b['id']];
+        });
         return $result;
     }
 
