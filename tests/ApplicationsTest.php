@@ -205,3 +205,7 @@ try {
 
 echo "Application tracker: {$count} checks passed.\n";
 
+
+// A registry must be a JSON-style list, never an arbitrary associative map.
+fails(static fn() => Applications::validateRegistry(['vaga-1' => example()]), 'associative application map rejected');
+ok(Applications::validateRegistry([]) === [], 'empty application list accepted');
