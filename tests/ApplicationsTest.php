@@ -209,3 +209,10 @@ echo "Application tracker: {$count} checks passed.\n";
 // A registry must be a JSON-style list, never an arbitrary associative map.
 fails(static fn() => Applications::validateRegistry(['vaga-1' => example()]), 'associative application map rejected');
 ok(Applications::validateRegistry([]) === [], 'empty application list accepted');
+
+// Oldest follow-ups first, independently from input registry insertion order.
+$old = example('old', '2026-09-01');
+$new = example('new', '2026-10-01');
+$same = example('alpha', '2026-09-01');
+$overdueSorted = Applications::overdue([$new, $old, $same], '2026-11-01', 14);
+ok(array_column($overdueSorted, 'id') === ['alpha', 'old', 'new'], 'overdue stable urgency order');
