@@ -133,6 +133,9 @@ final class Applications
     /** @param list<array<string,mixed>> $items */
     public static function validateRegistry(array $items): array
     {
+        if (!array_is_list($items)) {
+            throw new InvalidArgumentException('Registro deve ser uma lista de candidaturas.');
+        }
         if (count($items) > self::MAX_RECORDS) {
             throw new InvalidArgumentException('Limite de 5000 candidaturas excedido.');
         }
