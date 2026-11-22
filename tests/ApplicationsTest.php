@@ -203,6 +203,14 @@ try {
     @rmdir($folder);
 }
 
+// Object key ordering in JSON is not semantically meaningful.
+$ordered = Applications::advance(example('reordered-history'), 'triagem', '2026-10-02');
+$ordered['historico'][0] = ['data' => '2026-10-02', 'para' => 'triagem', 'de' => 'enviada'];
+ok(Applications::validate($ordered)['etapa'] === 'triagem',
+    'reordered history object keys are accepted');
+$ordered['historico'][0]['unknown'] = true;
+fails(static fn() => Applications::validate($ordered), 'extra history keys still rejected');
+
 echo "Application tracker: {$count} checks passed.\n";
 
 
