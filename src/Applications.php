@@ -108,7 +108,12 @@ final class Applications
         $previous = 'enviada';
         $previousDay = $record['data_envio'];
         foreach ($record['historico'] as $event) {
-            if (!is_array($event) || array_keys($event) !== ['de', 'para', 'data']) {
+            if (!is_array($event)) {
+                throw new InvalidArgumentException('Evento do histórico inválido.');
+            }
+            $eventFields = array_keys($event);
+            sort($eventFields, SORT_STRING);
+            if ($eventFields !== ['data', 'de', 'para']) {
                 throw new InvalidArgumentException('Evento do histórico inválido.');
             }
             if ($event['de'] !== $previous ||
