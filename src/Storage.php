@@ -45,6 +45,9 @@ final class Storage
             throw new RuntimeException('Erro de leitura.');
         }
         try {
+            if (str_starts_with($body, "\xEF\xBB\xBF")) {
+                $body = substr($body, 3);
+            }
             $document = json_decode($body, true, 64, JSON_THROW_ON_ERROR);
         } catch (JsonException $error) {
             throw new InvalidArgumentException('JSON inválido.', 0, $error);
