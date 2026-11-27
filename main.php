@@ -21,6 +21,9 @@ try {
     }
     if (count($argv)!==5) throw new InvalidArgumentException('Uso: php main.php candidatura.json NOVA_ETAPA DATA saida.json');
     $text=file_get_contents($argv[1]); if ($text===false) throw new RuntimeException('Falha de leitura');
+    if (str_starts_with($text, "\xEF\xBB\xBF")) {
+        $text = substr($text, 3);
+    }
     $data=json_decode($text,true,128,JSON_THROW_ON_ERROR); if (!is_array($data)) throw new InvalidArgumentException('Esperado objeto');
     $out=json_encode(transition($data,$argv[2],$argv[3]),JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)."\n";
     $file=fopen($argv[4],'x'); if ($file===false) throw new RuntimeException('Saída já existe ou não pode ser criada');
