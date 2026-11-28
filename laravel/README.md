@@ -1,46 +1,48 @@
-# Candidaturas Tracker — API Laravel 13
+# candidaturas-tracker — API Laravel 13
 
-API HTTP complementar para consultar o catálogo local do Candidaturas Tracker. Reutiliza as regras de negócio de `src/Applications.php` e a leitura validada de `src/Storage.php`; não duplica as transições de etapa.
+Proteção por token da API de consulta às candidaturas.
 
-**A API é somente leitura.** A CLI existente continua sendo a única interface de escrita. A API não retorna notas nem pretensão salarial, não envia contatos e não altera candidaturas.
+## Instalar e executar
 
-## Requisitos e instalação
-
-- PHP 8.3 ou superior
-- Composer 2
+Requer PHP 8.3 ou 8.4, extensões do Laravel e Composer 2. A dependência é `laravel/framework:^13.0`; o `composer.lock` registra a resolução revisada. A aplicação PHP original continua independente.
 
 ```sh
 cd laravel
-composer install
-cp .env.example .env
-```
-
-No PowerShell, copie o arquivo com `Copy-Item .env.example .env`. Configure `GX_APPLICATIONS_FILE` no ambiente do processo para apontar ao mesmo arquivo JSON utilizado pela CLI. Se não for configurado, a classe Storage usa seu caminho padrão em `~/.gx-candidaturas/candidaturas.json`.
-
-## Executar e testar
-
-```sh
+composer install --no-interaction --prefer-dist
 composer validate --no-check-publish
+composer audit
+php artisan route:list --json
 composer test
-php artisan route:list
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-Mantenha o servidor limitado a `127.0.0.1`. Esta API não possui autenticação nem autorização e não deve ser publicada na internet.
+Copie `.env.example` para `.env` somente em instalação nova. Não versione esse arquivo nem segredos. `CACHE_STORE=file` é o padrão para manter o contador de requisições entre chamadas. O diretório `storage/framework/cache/data` precisa ser gravável. `CACHE_STORE=array` é reservado aos testes em processo único; ele não limita chamadas entre processos web.
 
-## Endpoints
+## Contrato HTTP
 
-| Método | Rota | Finalidade |
+A API continua somente leitura e reutiliza `Applications` e `Storage`. A CLI mantém a escrita e o formato do arquivo. Notas e pretensão salarial são omitidas das respostas. O armazenamento pode ser selecionado por `GX_APPLICATIONS_FILE`.
+
+Gere um segredo local com `php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'` e configure `LOCAL_API_TOKEN` no `.env` privado. Não há token padrão nem senha compartilhada no código. Todos os endpoints `/api/*` exigem `Authorization: Bearer <token>`; sem configuração de pelo menos 32 caracteres retornam 503 e credencial ausente ou errada retorna 401. `GET /up` permanece público.
+
+| Método | Rota | Uso |
 |---|---|---|
-| GET | `/up` | Health check do Laravel |
-| GET | `/api/applications` | Lista com filtros `stage`, `q` e paginação `limit`/`offset` |
-| GET | `/api/applications/summary` | Totais por etapa e situação |
-| GET | `/api/applications/follow-ups?date=AAAA-MM-DD&days=14&limit=20` | Prioridades de acompanhamento |
-| GET | `/api/applications/overdue?date=AAAA-MM-DD&days=14` | Candidaturas sem atualização |
-| GET | `/api/applications/{id}` | Consulta um registro |
+| GET | `/api/applications` | Filtros `stage`, `q`, `limit` (1–100) e `offset` (0–5000) |
+| GET | `/api/applications/summary` | Totais por etapa |
+| GET | `/api/applications/follow-ups` | `date`, `days` (1–365), `limit` (1–100) |
+| GET | `/api/applications/overdue` | `date`, `days` |
+| GET | `/api/applications/{id}` | Consulta por ID |
 
-Filtros inválidos retornam HTTP 422; ID inexistente retorna 404. Os endpoints de lista e detalhe omitem notas e pretensão salarial. Os dados não são enviados a serviços externos.
+Envie o cabeçalho Bearer usando seu cliente HTTP. A mudança exige configurar o token em clientes anteriores. Esta autenticação representa um único proprietário local; não oferece contas, papéis nem isolamento entre múltiplos usuários.
 
-## Compatibilidade
 
-A API lê o mesmo arquivo versionado da CLI, usando a validação de `Storage::load()`. Não execute gravações externas concorrentes no arquivo JSON. Para alterar candidaturas, continue usando `php cli/tracker.php`. Não existe sincronização em tempo real ou autenticação multiusuário.
+## Arquitetura e limites
+
+`bootstrap/app.php` registra rotas, respostas JSON de erro e limite de 60 chamadas por minuto por IP. Respostas 429 incluem `Retry-After`. `config/filesystems.php` desativa rotas de upload/download desnecessárias. As rotas desta API não usam Eloquent, sessões, filas, banco ou armazenamento de uploads, pois essas funções não são necessárias ao escopo. As classes do domínio são reutilizadas por autoload do Composer, sem copiar regras.
+
+Entradas inválidas retornam 422, formato não suportado 415 e corpos acima do limite 413 nos endpoints JSON. Erros inesperados não devem expor stack traces: mantenha `APP_DEBUG=false`. Não há CORS personalizado para integrar uma SPA pública. Use o servidor em loopback; publicação exige uma decisão separada sobre identidade de usuários, autorização, TLS, proxy confiável e operação.
+
+## Verificação
+
+`composer test` executa smoke tests e regressões diretamente pelo kernel HTTP. As regressões cobrem casos válidos e inválidos, proteção de saída, limites, 429 e ausência das rotas de armazenamento. Exceções do executor encerram o processo com código 1. O workflow `Laravel API` instala dependências pelo lock, executa auditoria, lista rotas e roda os testes em PHP 8.3 e 8.4. A suíte original da raiz continua no workflow existente.
+
+O bootstrap mínimo usa um executor HTTP independente; `composer test` é o comando de teste deste módulo. Não há PHPUnit nem comando `artisan test` instalado aqui.

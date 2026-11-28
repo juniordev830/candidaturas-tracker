@@ -48,3 +48,7 @@ Não há serviços externos conectados nem dados reais neste pacote. Exemplos de
 ## Estado de validação
 
 A especificação foi preparada. Compilação e testes da aplicação ainda não se aplicam porque o código não foi implementado.
+
+## API Laravel complementar
+
+Proteção por token da API de consulta às candidaturas. Consulte [a arquitetura e o contrato da API](laravel/README.md). O domínio e a interface original foram preservados. Novas alterações estão em branch própria e dependem de aprovação antes de merge.

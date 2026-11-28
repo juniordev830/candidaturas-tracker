@@ -3,7 +3,6 @@ use GX\Applications\Applications;
 use GX\Applications\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use InvalidArgumentException;
 
 function applicationSummaryFields(array $record): array
 {

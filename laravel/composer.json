@@ -1,6 +1,6 @@
 {
   "name": "juniordev830/candidaturas-tracker-api",
-  "description": "Read-only Laravel API for the Candidaturas Tracker domain",
+  "description": "API Laravel complementar ao domínio existente de candidaturas-tracker",
   "type": "project",
   "require": {
     "php": "^8.3",
@@ -8,11 +8,15 @@
   },
   "autoload": {
     "psr-4": {
-      "GX\\Applications\\": "../src/"
+      "GX\\Applications\\": "../src/",
+      "App\\": "app/"
     }
   },
   "scripts": {
-    "test": "@php tests/smoke.php"
+    "test": [
+      "@php tests/smoke.php",
+      "@php tests/regression.php"
+    ]
   },
   "config": {
     "sort-packages": true
