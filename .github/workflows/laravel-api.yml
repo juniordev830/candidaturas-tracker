@@ -15,17 +15,26 @@ permissions:
 jobs:
   api:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4']
+    env:
+      CACHE_STORE: array
     defaults:
       run:
         working-directory: laravel
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          php-version: '8.3'
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: ${{ matrix.php }}
           tools: composer:v2
           coverage: none
       - run: composer validate --no-check-publish
       - run: composer install --no-interaction --prefer-dist
       - run: composer audit
+      - run: php artisan route:list --json
       - run: composer test

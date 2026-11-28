@@ -104,4 +104,8 @@ Mantido por [João Junior](https://github.com/juniordev830).
 
 ## API HTTP opcional com Laravel 13
 
-O diretório [`laravel/`](laravel/README.md) contém uma API HTTP **somente leitura** que reutiliza `GX\\Applications\\Applications` e `Storage` do domínio PHP existente. Ela não substitui a CLI, não grava nem altera candidaturas e não expõe observações ou pretensão salarial. Requer PHP 8.3+ e Composer 2. Execute em loopback (`127.0.0.1`), configure `GX_APPLICATIONS_FILE` para apontar ao mesmo catálogo JSON usado pela CLI e consulte `laravel/README.md` para rotas e testes. A API não tem autenticação; não a publique na internet.
+O diretório [`laravel/`](laravel/README.md) contém uma API HTTP **somente leitura** que reutiliza `GX\\Applications\\Applications` e `Storage` do domínio PHP existente. Ela não substitui a CLI, não grava nem altera candidaturas e não expõe observações ou pretensão salarial. Requer PHP 8.3+ e Composer 2. Execute em loopback (`127.0.0.1`), configure `GX_APPLICATIONS_FILE` para apontar ao mesmo catálogo JSON usado pela CLI e consulte `laravel/README.md` para rotas e testes. Configure `LOCAL_API_TOKEN` e envie `Authorization: Bearer <token>`; a API é para um único proprietário local. Não a publique na internet nesta versão.
+
+## Integração Laravel 13
+
+Proteção por token da API de consulta às candidaturas. [Instalação, endpoints, autenticação e testes](laravel/README.md). A disponibilidade na branch principal depende da aprovação do PR desta integração.
