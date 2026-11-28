@@ -1,5 +1,7 @@
 # Candidaturas Tracker
 
+**Navegação** · [Funcionalidades](#funcionalidades) · [Requisitos](#requisitos) · [Exemplo no terminal](#exemplo-no-terminal) · [Código e estudo](docs/ENGENHARIA_REVERSA.md)
+
 Ferramenta local em **PHP 8.3** para acompanhar candidaturas de emprego, controlar etapas de seleção e consultar registros que estão há muito tempo sem atualização.
 
 A implementação original de transições em `main.php` foi mantida. A expansão adiciona biblioteca reutilizável, persistência local, CLI e testes independentes.
@@ -92,3 +94,9 @@ Ainda não definida.
 Consulte o [guia de validação e manutenção](docs/GUIA_DE_VALIDACAO.md) para reproduzir testes, entender as limitações e revisar mudanças com segurança.
 
 A API `validateRegistry` exige uma lista indexada de candidaturas (não um mapa associativo), evitando aceitar JSON com formato incorreto. `overdue` apresenta resultados da última atualização mais antiga para a mais recente, com desempate por ID; nenhuma ordem prévia do arquivo afeta a prioridade.
+
+## Código e roteiro de estudo
+
+Como testar que um retorno recebido hoje altera o acompanhamento sem apagar o histórico da candidatura? O [guia de engenharia reversa](docs/ENGENHARIA_REVERSA.md) reúne o mapa dos módulos e uma pergunta técnica baseada no projeto.
+
+Mantido por [João Junior](https://github.com/juniordev830).
