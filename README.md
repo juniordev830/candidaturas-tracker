@@ -100,3 +100,8 @@ A API `validateRegistry` exige uma lista indexada de candidaturas (não um mapa 
 Como testar que um retorno recebido hoje altera o acompanhamento sem apagar o histórico da candidatura? O [guia de engenharia reversa](docs/ENGENHARIA_REVERSA.md) reúne o mapa dos módulos e uma pergunta técnica baseada no projeto.
 
 Mantido por [João Junior](https://github.com/juniordev830).
+
+
+## API HTTP opcional com Laravel 13
+
+O diretório [`laravel/`](laravel/README.md) contém uma API HTTP **somente leitura** que reutiliza `GX\\Applications\\Applications` e `Storage` do domínio PHP existente. Ela não substitui a CLI, não grava nem altera candidaturas e não expõe observações ou pretensão salarial. Requer PHP 8.3+ e Composer 2. Execute em loopback (`127.0.0.1`), configure `GX_APPLICATIONS_FILE` para apontar ao mesmo catálogo JSON usado pela CLI e consulte `laravel/README.md` para rotas e testes. A API não tem autenticação; não a publique na internet.

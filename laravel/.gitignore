@@ -1,0 +1,5 @@
+/vendor/
+/.env
+/.env.*.local
+/bootstrap/cache/*.php
+/storage/*.key
